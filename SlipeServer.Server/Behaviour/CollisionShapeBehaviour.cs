@@ -11,36 +11,28 @@ namespace SlipeServer.Server.Behaviour
     /// <summary>
     /// Behaviour responsible for triggering collision shape enter and exit events when an element's position changes
     /// </summary>
-    public class CollisionShapeBehaviour
+    public class CollisionShapeBehaviour : ElementBehaviourBase<CollisionShape>
     {
-        private readonly HashSet<CollisionShape> collisionShapes;
-        private readonly MtaServer server;
-
-        public CollisionShapeBehaviour(MtaServer server, IElementRepository elementRepository)
+        public CollisionShapeBehaviour(MtaServer server, IElementRepository elementRepository) : base(server, elementRepository, ElementType.Colshape)
         {
-            this.collisionShapes = new HashSet<CollisionShape>();
-            foreach (var collisionShape in elementRepository.GetByType<CollisionShape>(ElementType.Colshape))
-            {
-                this.AddCollisionShape(collisionShape);
-            }
-
-            server.ElementCreated += OnElementCreate;
-            this.server = server;
         }
 
-        private void OnElementCreate(Element element)
+
+        protected override void OnElementAdded(CollisionShape collisionShape)
         {
-            if (element is CollisionShape collisionShape)
+            if (collisionShape is CollisionCircle collisionCircle)
             {
-                AddCollisionShape(collisionShape);
-                if (collisionShape is CollisionCircle collisionCircle)
-                {
-                    collisionCircle.RadiusChanged += OnRadiusChange;
-                }
-            } else
+                collisionCircle.RadiusChanged += OnRadiusChange;
+            }
+        }
+
+        protected override void OnElementCreate(Element element)
+        {
+            if (element is not CollisionShape)
             {
                 element.PositionChanged += OnElementPositionChange;
             }
+            base.OnElementCreate(element);
         }
 
         private void OnRadiusChange(Element sender, ElementChangedEventArgs<float> args)
@@ -48,15 +40,9 @@ namespace SlipeServer.Server.Behaviour
             this.server.BroadcastPacket(CollisionShapePacketFactory.CreateSetRadius(args.Source, args.NewValue));
         }
 
-        private void AddCollisionShape(CollisionShape collisionShape)
-        {
-            this.collisionShapes.Add(collisionShape);
-            collisionShape.Destroyed += (source) => this.collisionShapes.Remove(collisionShape);
-        }
-
         private void RefreshColliders(Element element)
         {
-            foreach (var shape in this.collisionShapes)
+            foreach (var shape in this.elements)
             {
                 shape.CheckElementWithin(element);
             }

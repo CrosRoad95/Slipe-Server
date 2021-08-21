@@ -13,29 +13,21 @@ namespace SlipeServer.Server.Behaviour
     /// <summary>
     /// Behaviour responsible for handling ped events and sending corresponding packets
     /// </summary>
-    public class PedPacketBehaviour
+    public class PedPacketBehaviour : ElementBehaviourBase<Ped>
     {
-        private readonly MtaServer server;
-
-        public PedPacketBehaviour(MtaServer server)
+        public PedPacketBehaviour(MtaServer server, IElementRepository elementRepository) : base(server, elementRepository, ElementType.Ped)
         {
-            this.server = server;
-
-            server.ElementCreated += HandleElementCreate;
         }
 
-        private void HandleElementCreate(Element obj)
+        protected override void OnElementAdded(Ped ped)
         {
-            if (obj is Ped ped)
-            {
-                ped.ModelChanged += RelayModelChange;
-                ped.HealthChanged += RelayHealthChange;
-                ped.ArmourChanged += RelayArmourChange;
-                ped.WeaponSlotChanged += RelayWeaponSlotChange;
-                ped.WeaponReceived += RelayPedWeaponReceive;
-                ped.WeaponRemoved += RelayPedWeaponRemove;
-                ped.AmmoUpdated += RelayPedAmmoCountUpdate;
-            }
+            ped.ModelChanged += RelayModelChange;
+            ped.HealthChanged += RelayHealthChange;
+            ped.ArmourChanged += RelayArmourChange;
+            ped.WeaponSlotChanged += RelayWeaponSlotChange;
+            ped.WeaponReceived += RelayPedWeaponReceive;
+            ped.WeaponRemoved += RelayPedWeaponRemove;
+            ped.AmmoUpdated += RelayPedAmmoCountUpdate;
         }
 
         private void RelayModelChange(object sender, ElementChangedEventArgs<Ped, ushort> args)

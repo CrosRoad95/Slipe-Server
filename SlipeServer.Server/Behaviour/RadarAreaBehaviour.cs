@@ -9,35 +9,15 @@ using System.Numerics;
 
 namespace SlipeServer.Server.Behaviour
 {
-    public class RadarAreaBehaviour
+    public class RadarAreaBehaviour : ElementBehaviourBase<RadarArea>
     {
-        private readonly MtaServer server;
-        private readonly HashSet<RadarArea> radarAreas;
-
-        public RadarAreaBehaviour(MtaServer server, IElementRepository elementRepository)
+        public RadarAreaBehaviour(MtaServer server, IElementRepository elementRepository) : base(server, elementRepository, ElementType.RadarArea)
         {
-            this.server = server;
-            this.radarAreas = new HashSet<RadarArea>();
-            foreach (var radarArea in elementRepository.GetByType<RadarArea>(ElementType.RadarArea))
-            {
-                AddRadarArea(radarArea);
-            }
 
-            server.ElementCreated += OnElementCreate;
         }
 
-        private void OnElementCreate(Element element)
+        protected override void OnElementAdded(RadarArea radarArea)
         {
-            if (element is RadarArea radarArea)
-            {
-                AddRadarArea(radarArea);
-            }
-        }
-
-        private void AddRadarArea(RadarArea radarArea)
-        {
-            this.radarAreas.Add(radarArea);
-            radarArea.Destroyed += (source) => this.radarAreas.Remove(radarArea);
             radarArea.ColorChanged += ColorChanged;
             radarArea.SizeChanged += SizeChanged;
             radarArea.FlashingStateChanged += FlashingStateChanged;
