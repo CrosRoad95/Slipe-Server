@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MoonSharp.Interpreter;
+using MoonSharp.VsCodeDebugger;
 using SlipeServer.Scripting;
 using SlipeServer.Server;
 using SlipeServer.Server.Elements;
@@ -20,6 +21,7 @@ namespace SlipeServer.Lua
         private readonly Dictionary<string, Script> scripts;
         private readonly Dictionary<string, LuaMethod> methods;
         private readonly LuaTranslator translator;
+        private readonly MoonSharpVsCodeDebugServer moonSharpVsCodeDebugServer;
 
         public LuaService(MtaServer server, ILogger logger, RootElement root)
         {
@@ -29,6 +31,12 @@ namespace SlipeServer.Lua
             this.scripts = new Dictionary<string, Script>();
             this.methods = new Dictionary<string, LuaMethod>();
             this.translator = new LuaTranslator();
+            this.moonSharpVsCodeDebugServer = new MoonSharpVsCodeDebugServer();
+            this.moonSharpVsCodeDebugServer.Start();
+            //this.moonSharpVsCodeDebugServer.Logger += (e) =>
+            //{
+            //    Console.WriteLine("logger: {0}", e);
+            //};
         }
 
         public void LoadDefinitions(object methodSet)
@@ -102,7 +110,8 @@ namespace SlipeServer.Lua
             LoadGlobals(script);
             LoadDefinitions(script);
 
-            script.DoString(code);
+            this.moonSharpVsCodeDebugServer.AttachToScript(script, identifier, s => AppDomain.CurrentDomain.BaseDirectory + s.Name);
+            script.DoString(code, codeFriendlyName: identifier);
         }
 
         public void LoadScript(string identifier, string[] codes)
@@ -118,8 +127,10 @@ namespace SlipeServer.Lua
             LoadGlobals(script);
             LoadDefinitions(script);
 
+            this.moonSharpVsCodeDebugServer.AttachToScript(script, identifier, s => s.Name);
+
             foreach (var code in codes)
-                script.DoString(code);
+                script.DoString(code, codeFriendlyName: "/slipe/lua/" + identifier);
         }
 
         public async Task LoadScriptFromPath(string path) => LoadScript(path, await File.ReadAllTextAsync(path));
@@ -140,7 +151,7 @@ namespace SlipeServer.Lua
             foreach (var definition in this.methods)
             {
                 script.Globals["real"+ definition.Key] = definition.Value;
-                script.DoString($"function {definition.Key}(...) return table.unpack(real{definition.Key}({{...}})) end");
+                script.DoString($"function {definition.Key}(...) return table.unpack(real{definition.Key}({{...}})) end", codeFriendlyName: "/slipe/definition/" + definition.Key);
             }
         }
 
