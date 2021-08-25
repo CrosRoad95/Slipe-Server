@@ -74,7 +74,7 @@ namespace SlipeServer.Server.Behaviour
 
         private void RelayPedAmmoCountUpdate(object? sender, AmmoUpdateEventArgs e)
         {
-            this.server.BroadcastPacket(new SetAmmoCountRpcPacket(e.Ped.Id, (byte)e.WeaponId, e.AmmoCount, e.AmmoInClipCount));
+            this.server.BroadcastPacket(new SetAmmoCountRpcPacket(e.Source.Id, (byte)e.WeaponId, e.AmmoCount, e.AmmoInClipCount));
         }
     }
 }

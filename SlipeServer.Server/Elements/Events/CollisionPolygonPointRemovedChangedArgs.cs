@@ -5,14 +5,12 @@ using System.Numerics;
 
 namespace SlipeServer.Server.Elements.Events
 {
-    public class CollisionPolygonPointRemovedChangedArgs : EventArgs
+    public class CollisionPolygonPointRemovedChangedArgs : ElementEventArgs<CollisionPolygon>
     {
-        public CollisionPolygon Polygon { get; set; }
         public int Index { get; set; }
 
-        public CollisionPolygonPointRemovedChangedArgs(CollisionPolygon polygon, int index)
+        public CollisionPolygonPointRemovedChangedArgs(CollisionPolygon polygon, int index) : base(polygon)
         {
-            this.Polygon = polygon;
             this.Index = index;
         }
     }

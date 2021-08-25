@@ -4,16 +4,14 @@ using System.Text;
 
 namespace SlipeServer.Server.Elements.Events
 {
-    public class ElementChangedEventArgs<TSource, TValue> : EventArgs
+    public class ElementChangedEventArgs<TSource, TValue> : ElementEventArgs<TSource>
     {
-        public TSource Source { get; }
         public TValue OldValue { get; }
         public TValue NewValue { get; }
         public bool IsSync { get; }
 
-        public ElementChangedEventArgs(TSource source, TValue oldValue, TValue newValue, bool isSync = false)
+        public ElementChangedEventArgs(TSource source, TValue oldValue, TValue newValue, bool isSync = false) : base(source)
         {
-            this.Source = source;
             this.OldValue = oldValue;
             this.NewValue = newValue;
             this.IsSync = isSync;
