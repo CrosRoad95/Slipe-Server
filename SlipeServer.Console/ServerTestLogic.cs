@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using SlipeServer.Server.Extensions;
 
 namespace SlipeServer.Console
 {
@@ -519,6 +520,14 @@ namespace SlipeServer.Console
                 }
                 if (args.Command == "jp" || args.Command == "jetpack")
                     player.HasJetpack = !player.HasJetpack;
+
+
+                if (args.Command == "distance")
+                {
+                    var dis = player.DistanceTo(this.Vehicle);
+                    this.chatBox.OutputTo(player, $"Distance to vehicle: {dis}", Color.YellowGreen);
+                }
+                
             };
 
             player.AcInfoReceived += (o, args) =>
