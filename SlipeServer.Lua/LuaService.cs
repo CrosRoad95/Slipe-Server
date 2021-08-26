@@ -18,18 +18,31 @@ namespace SlipeServer.Lua
         private readonly MtaServer server;
         private readonly ILogger logger;
         private readonly RootElement root;
-        private readonly Dictionary<string, Script> scripts;
+        private readonly ScriptHookContext scriptHookContext;
+        private readonly Dictionary<string, LuaScript> scripts;
         private readonly Dictionary<string, LuaMethod> methods;
         private readonly LuaTranslator translator;
 
-        public LuaService(MtaServer server, ILogger logger, RootElement root)
+        public LuaService(MtaServer server, ILogger logger, RootElement root, ScriptHookContext scriptHookContext)
         {
             this.server = server;
             this.logger = logger;
             this.root = root;
-            this.scripts = new Dictionary<string, Script>();
+            this.scriptHookContext = scriptHookContext;
+            this.scripts = new Dictionary<string, LuaScript>();
             this.methods = new Dictionary<string, LuaMethod>();
             this.translator = new LuaTranslator();
+        }
+
+        public void SetHookFor(Script script)
+        {
+            foreach (var item in scripts)
+            {
+                if (item.Value.Script == script)
+                {
+                    scriptHookContext.Hook = item.Value.Hook;
+                }
+            }
         }
 
         public void LoadDefinitions(object methodSet)
@@ -94,19 +107,20 @@ namespace SlipeServer.Lua
             }
         }
 
-        public void LoadScript(string identifier, string code)
+        public void LoadScript(string identifier, string code, IScriptHook? hook = null)
         {
             var script = new Script(CoreModules.Preset_SoftSandbox);
             script.Options.DebugPrint = (value) => this.logger.LogInformation(value);
-            this.scripts[identifier] = script;
+            this.scripts[identifier] = new LuaScript(script, hook);
 
             LoadGlobals(script);
             LoadDefinitions(script);
 
+            SetHookFor(script);
             script.DoString(code, codeFriendlyName: identifier);
         }
 
-        public void LoadScript(string identifier, string[] codes)
+        public void LoadScript(string identifier, string[] codes, IScriptHook? hook = null)
         {
             var script = new Script(CoreModules.Preset_SoftSandbox);
             script.Options.DebugPrint = (value) =>
@@ -114,11 +128,12 @@ namespace SlipeServer.Lua
                 using var scope = this.logger.BeginScope(script);
                 this.logger.LogDebug(value);
             };
-            this.scripts[identifier] = script;
+            this.scripts[identifier] = new LuaScript(script, hook);
 
             LoadGlobals(script);
             LoadDefinitions(script);
 
+            SetHookFor(script);
             foreach (var code in codes)
                 script.DoString(code, codeFriendlyName: identifier);
         }

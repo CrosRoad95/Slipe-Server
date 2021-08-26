@@ -23,14 +23,16 @@ namespace SlipeServer.Console
 
             using FileStream testLua = File.OpenRead("test.lua");
             using StreamReader reader = new StreamReader(testLua);
+            var hook = new LuaTestHook();
             try
             {
-                luaService.LoadScript("test.lua", reader.ReadToEnd());
+                luaService.LoadScript("test.lua", reader.ReadToEnd(), hook);
             }
             catch (InterpreterException ex)
             {
                 System.Console.WriteLine("Failed to load script\n\t{0}", ex.DecoratedMessage);
             }
+            System.Console.WriteLine("test.lua created: {0} elements.", hook.Counter);
         }
     }
 }
