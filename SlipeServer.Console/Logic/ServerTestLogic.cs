@@ -91,6 +91,8 @@ namespace SlipeServer.Console.Logic
             SetupTestElements();
 
             this.luaService.AddEventHandler("Slipe.Test.Event", (e) => this.TriggerTestEvent(e.Player));
+            this.luaService.AddEventHandler("Test1", (e) => System.Console.WriteLine("handler: Test1"));
+            this.luaService.AddEventHandler("Test2", (e) => System.Console.WriteLine("handler: Test2"));
 
             this.worldService.SetWeather(Weather.ExtraSunnyDesert);
             this.worldService.CloudsEnabled = false;

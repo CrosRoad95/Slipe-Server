@@ -23,3 +23,9 @@ addCommandHandler("crun", function(command, ...)
 end)
 
 setDevelopmentMode(true)
+
+addCommandHandler("trigger", function(command, ...)
+    outputChatBox("triggeredA test1, test2")
+    triggerServerEvent("Test1", resourceRoot)
+    triggerServerEvent("Test2", resourceRoot)
+end)
