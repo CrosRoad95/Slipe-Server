@@ -2,8 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SlipeServer.ConfigurationProviders;
 using SlipeServer.Console.Logic;
+using SlipeServer.Console.Providers;
 using SlipeServer.Lua;
 using SlipeServer.Server;
+using SlipeServer.Server.Resources.Providers;
 using SlipeServer.Server.ServerOptions;
 using System;
 using System.Threading;
@@ -48,7 +50,8 @@ namespace SlipeServer.Console
 
             this.configuration = configurationProvider?.GetConfiguration() ?? new Configuration()
             {
-                IsVoiceEnabled = true
+                IsVoiceEnabled = true,
+                Port = 20000,
             };
 
             this.server = new MtaServer(
@@ -65,6 +68,7 @@ namespace SlipeServer.Console
                     builder.ConfigureServices(services =>
                     {
                         services.AddSingleton<ILogger>(this.Logger);
+                        services.AddSingleton<IResourceProvider, ExtendedFileSystemResourceProvider>();
                     });
                     builder.AddLua();
 

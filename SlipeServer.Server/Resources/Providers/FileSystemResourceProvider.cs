@@ -1,4 +1,4 @@
-﻿using Force.Crc32;
+using Force.Crc32;
 using SlipeServer.Packets.Structs;
 using SlipeServer.Server.Elements;
 using SlipeServer.Server.Elements.Enums;
@@ -13,7 +13,7 @@ namespace SlipeServer.Server.Resources.Providers
         private readonly MtaServer mtaServer;
         private readonly RootElement rootElement;
         private readonly Configuration configuration;
-        private readonly Dictionary<string, Resource> resources;
+        protected readonly Dictionary<string, Resource> resources;
         private ushort netId = 0;
 
         public FileSystemResourceProvider(MtaServer mtaServer, RootElement rootElement, Configuration configuration)
@@ -46,63 +46,60 @@ namespace SlipeServer.Server.Resources.Providers
 
         private IEnumerable<Resource> IndexResourceDirectory(string directory)
         {
-            List<Resource> resources = new();
-
             var directories = Directory.EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly);
             foreach (var subDirectory in directories)
             {
                 if (subDirectory.StartsWith("[") && subDirectory.EndsWith("]"))
                     foreach (var resource in IndexResourceDirectory(subDirectory))
-                        resources.Add(resource);
+                        yield return resource;
 
                 var name = Path.GetFileName(subDirectory)!;
                 if (this.resources.ContainsKey(name))
                 {
-                    resources.Add(this.resources[name]);
+                    yield return this.resources[name];
                 } else
                 {
                     var resource = new Resource(this.mtaServer, this.rootElement, this, name, subDirectory)
                     {
                         NetId = this.netId++
                     };
-                    resources.Add(resource);
+                    yield return resource;
                 }
             }
-
-            return resources;
         }
 
-        public IEnumerable<ResourceFile> GetFilesForResource(string name) => GetFilesForResource(this.resources[name]);
-
-        public IEnumerable<ResourceFile> GetFilesForResource(Resource resource)
+        public virtual ResourceFile CreateResourceFileFromFile(string path, string file)
         {
-            var path = resource.Path;
-
-            List<ResourceFile> resourceFiles = new List<ResourceFile>();
-
             using (var md5 = MD5.Create())
             {
-                foreach (var file in Directory.GetFiles(path))
+                byte[] content = File.ReadAllBytes(file);
+                var hash = md5.ComputeHash(content);
+                var checksum = Crc32Algorithm.Compute(content);
+
+                string fileName2 = Path.GetRelativePath(Path.Join(this.configuration.ResourceDirectory, path), file);
+                string fileName = Path.GetFileName(file);
+                var fileType = (fileName.EndsWith(".lua") || fileName.EndsWith(".luac")) ? ResourceFileType.ClientScript : ResourceFileType.ClientFile;
+                return new ResourceFile()
                 {
-                    byte[] content = File.ReadAllBytes(file);
-                    var hash = md5.ComputeHash(content);
-                    var checksum = Crc32Algorithm.Compute(content);
-
-                    string fileName = Path.GetRelativePath(Path.Join(this.configuration.ResourceDirectory, path), file);
-                    var fileType = fileName.EndsWith(".lua") ? ResourceFileType.ClientScript : ResourceFileType.ClientFile;
-                    resourceFiles.Add(new ResourceFile()
-                    {
-                        Name = fileName,
-                        AproximateSize = content.Length,
-                        IsAutoDownload = fileType == ResourceFileType.ClientFile ? true : null,
-                        CheckSum = checksum,
-                        FileType = (byte)fileType,
-                        Md5 = hash
-                    });
-                }
+                    Name = fileName,
+                    AproximateSize = content.Length,
+                    IsAutoDownload = fileType == ResourceFileType.ClientFile ? true : null,
+                    CheckSum = checksum,
+                    FileType = (byte)fileType,
+                    Md5 = hash
+                };
             }
+        }
 
-            return resourceFiles.ToArray();
+        public virtual IEnumerable<ResourceFile> GetFilesForResource(string name) => GetFilesForResource(this.resources[name]);
+
+        public virtual IEnumerable<ResourceFile> GetFilesForResource(Resource resource)
+        {
+            string path = resource.Path;
+            foreach (var file in Directory.GetFiles(path))
+            {
+                yield return CreateResourceFileFromFile(path, file);
+            }
         }
     }
 }
