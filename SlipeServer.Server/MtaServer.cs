@@ -20,10 +20,12 @@ using SlipeServer.Server.Resources;
 using SlipeServer.Server.Resources.Providers;
 using SlipeServer.Server.Resources.Serving;
 using SlipeServer.Server.ServerBuilders;
+using SlipeServer.Server.ServerBuilders.Interfaces;
 using SlipeServer.Server.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SlipeServer.Server;
 
@@ -157,7 +159,13 @@ public class MtaServer
     public object Instantiate(Type type, params object[] parameters) => ActivatorUtilities.CreateInstance(this.serviceProvider, type, parameters);
     public T Instantiate<T>() => ActivatorUtilities.CreateInstance<T>(this.serviceProvider);
     public T Instantiate<T>(params object[] parameters)
-        => ActivatorUtilities.CreateInstance<T>(this.serviceProvider, parameters);
+    {
+        T instance = ActivatorUtilities.CreateInstance<T>(this.serviceProvider, parameters);
+        if(instance is IAsyncLogic asyncLogic)
+            Task.Run(async () => await asyncLogic.StartAsync());
+
+        return instance;
+    }
 
     public T? GetService<T>() => this.serviceProvider.GetService<T>();
     public T GetRequiredService<T>() where T: notnull => this.serviceProvider.GetRequiredService<T>();

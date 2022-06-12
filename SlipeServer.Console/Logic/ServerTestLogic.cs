@@ -28,10 +28,11 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using SlipeServer.Server.ServerBuilders.Interfaces;
 
 namespace SlipeServer.Console.Logic;
 
-public class ServerTestLogic
+public class ServerTestLogic : IAsyncLogic
 {
     private readonly MtaServer<CustomPlayer> server;
     private readonly IElementCollection elementCollection;
@@ -1117,5 +1118,14 @@ public class ServerTestLogic
         table.TableValue?.Add("self", table);
 
         this.luaService.TriggerEventFor(player, "Slipe.Test.ClientEvent", this.root, "String value", true, 23, table);
+    }
+
+    public async Task StartAsync()
+    {
+        for(int i = 0; i < 3;i++)
+        {
+            this.logger.LogInformation("Async startup {0}", i);
+            await Task.Delay(1000);
+        }
     }
 }
