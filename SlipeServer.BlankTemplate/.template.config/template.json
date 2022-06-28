@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "icon": "icon.png",
+  "author": "Sebastian Jura",
+  "classifications": [ "Console", "Linux" ],
+  "identity": "SlipeServer.BlankTemplate",
+  "name": "Slipe server",
+  "description": "Blank startup project for slipe server. Ideal to start your journey into server developing.",
+  "shortName": "slipe server",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}
