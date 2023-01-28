@@ -248,6 +248,8 @@ public class ServerTestLogic
 
         var polygon1 = new CollisionPolygon(new Vector3(0, -25, 0), new Vector2[] { new Vector2(-25, -25), new Vector2(-25, -50), new Vector2(-50, -25) }).AssociateWith(this.server);
         var polygon2 = new CollisionPolygon(new Vector3(0, 25, 0), new Vector2[] { new Vector2(25, 25), new Vector2(25, 50), new Vector2(50, 25) }).AssociateWith(this.server);
+        polygon1.ElementEntered += DebugElementEntered;
+        polygon2.ElementEntered += DebugElementEntered;
 
         vehicle.PedEntered += async (sender, eventArgs) =>
         {
@@ -274,6 +276,13 @@ public class ServerTestLogic
         var polygon = new CollisionPolygon(new Vector3(0, -25, 0), new Vector2[] { new Vector2(-25, -25), new Vector2(-25, -50), new Vector2(-50, -25) }).AssociateWith(this.server);
         var rectangle = new CollisionRectangle(new Vector2(50, 20), new Vector2(2, 2)).AssociateWith(this.server);
         var cuboid = new CollisionCuboid(new Vector3(30, 20, 4), new Vector3(2, 2, 2)).AssociateWith(this.server);
+        circle.ElementEntered += DebugElementEntered;
+        sphere.ElementEntered += DebugElementEntered;
+        tube.ElementEntered += DebugElementEntered;
+        polygon.ElementEntered += DebugElementEntered;
+        rectangle.ElementEntered += DebugElementEntered;
+        cuboid.ElementEntered += DebugElementEntered;
+
         Task.Run(async () =>
         {
             int i = 0;
@@ -296,6 +305,7 @@ public class ServerTestLogic
         });
 
         var shape = new CollisionCircle(new Vector2(0, 25), 3).AssociateWith(this.server);
+        shape.ElementEntered += DebugElementEntered;
 
         circle.RadiusChanged += async (Element sender, ElementChangedEventArgs<float> args) =>
         {
@@ -376,6 +386,11 @@ public class ServerTestLogic
         polygon.SetPointPosition(0, new Vector2(-25, -25));
         rectangle.Dimensions = new Vector2(2, 2);
         cuboid.Dimensions = new Vector3(2, 2, 2);
+    }
+
+    private void DebugElementEntered(Element obj)
+    {
+        this.chatBox.Output($"Some element entered some colshape. {obj}", Color.YellowGreen);
     }
 
     private void SetupTestCommands()
