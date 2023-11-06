@@ -19,6 +19,20 @@ using SlipeServer.Server.Clients;
 
 namespace SlipeServer.Server.Elements;
 
+public sealed class PlayerDisptacher
+{
+    private readonly Player player;
+
+    public PlayerDisptacher(Player player)
+    {
+        this.player = player;
+    }
+
+    public void TriggerCommand(string command, string[] arguments) => player.TriggerCommand(command, arguments);
+
+    public void TriggerDamaged(Element? damager, DamageType damageType, BodyPart bodyPart) => player.TriggerDamaged(damager, damageType, bodyPart);
+}
+
 /// <summary>
 /// A player element
 /// Players are the representation of any client that connects to the server.
@@ -174,6 +188,7 @@ public class Player : Ped
 
     private string DebuggerDisplay => $"{this.Name} ({this.Id})";
 
+    public PlayerDisptacher Dispatcher { get; private set; }
     public Player() : base(0, Vector3.Zero)
     {
         this.Camera = new Camera(this);
@@ -184,6 +199,7 @@ public class Player : Ped
         this.Controls = new(this);
         this.UpdateAssociatedPlayers();
 
+        this.Dispatcher = new(this);
         this.Disconnected += HandleDisconnect;
     }
 
@@ -269,12 +285,12 @@ public class Player : Ped
         this.Client.SendPacket(PlayerPacketFactory.CreateToggleAllControlsPacket(isEnabled, gtaControls, mtaControls));
     }
 
-    public void TriggerCommand(string command, string[] arguments)
+    internal void TriggerCommand(string command, string[] arguments)
     {
         this.CommandEntered?.Invoke(this, new PlayerCommandEventArgs(this, command, arguments));
     }
 
-    public void TriggerDamaged(Element? damager, DamageType damageType, BodyPart bodyPart)
+    internal void TriggerDamaged(Element? damager, DamageType damageType, BodyPart bodyPart)
     {
         this.Damaged?.Invoke(this, new PlayerDamagedEventArgs(this, damager, damageType, bodyPart));
     }
