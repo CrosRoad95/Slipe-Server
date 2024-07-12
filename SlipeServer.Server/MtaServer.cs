@@ -548,11 +548,11 @@ public class MtaServer
         this.clients[netWrapper] = new Dictionary<uint, IClient>();
     }
 
-    private void EnqueueIncomingPacket(INetWrapper netWrapper, uint binaryAddress, PacketId packetId, byte[] data, uint? ping)
+    private void EnqueueIncomingPacket(INetWrapper netWrapper, uint binaryAddress, ushort port, PacketId packetId, byte[] data, uint? ping)
     {
         if (!this.clients[netWrapper].ContainsKey(binaryAddress))
         {
-            var client = CreateClient(binaryAddress, netWrapper);
+            var client = CreateClient(binaryAddress, port, netWrapper);
             client.Player.AssociateWith(this);
 
             this.clients[netWrapper][binaryAddress] = client;
@@ -587,13 +587,13 @@ public class MtaServer
         }
     }
 
-    protected virtual IClient CreateClient(uint binaryAddress, INetWrapper netWrapper)
+    protected virtual IClient CreateClient(uint binaryAddress, ushort port, INetWrapper netWrapper)
     {
         if (this.clientCreationMethod != null)
             return this.clientCreationMethod(binaryAddress, netWrapper);
 
         var player = new Player();
-        player.Client = new Client(binaryAddress, netWrapper, player);
+        player.Client = new Client(binaryAddress, port, netWrapper, player);
         return player.Client;
     }
 
@@ -726,10 +726,10 @@ public class MtaNewPlayerServer<TPlayer> : MtaServer<TPlayer> where TPlayer : Pl
     public MtaNewPlayerServer(IServiceProvider serviceProvider, Action<ServerBuilder> builderAction) : base(serviceProvider, builderAction) { }
     internal MtaNewPlayerServer(Action<ServerBuilder> builderAction) : base(builderAction) { }
 
-    protected override IClient CreateClient(uint binaryAddress, INetWrapper netWrapper)
+    protected override IClient CreateClient(uint binaryAddress, ushort port, INetWrapper netWrapper)
     {
         var player = new TPlayer();
-        player.Client = new Client<TPlayer>(binaryAddress, netWrapper, player);
+        player.Client = new Client<TPlayer>(binaryAddress, port, netWrapper, player);
         return player.Client;
     }
 }
@@ -744,10 +744,10 @@ public class MtaDiPlayerServer<TPlayer> : MtaServer<TPlayer> where TPlayer : Pla
 
     public MtaDiPlayerServer(IServiceProvider serviceProvider, Action<ServerBuilder> builderAction) : base(serviceProvider, builderAction) { }
 
-    protected override IClient CreateClient(uint binaryAddress, INetWrapper netWrapper)
+    protected override IClient CreateClient(uint binaryAddress, ushort port, INetWrapper netWrapper)
     {
         var player = this.Instantiate<TPlayer>();
-        player.Client = new Client<TPlayer>(binaryAddress, netWrapper, player);
+        player.Client = new Client<TPlayer>(binaryAddress, port, netWrapper, player);
         return player.Client;
     }
 }

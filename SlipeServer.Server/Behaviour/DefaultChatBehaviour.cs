@@ -19,7 +19,7 @@ public class DefaultChatBehaviour
             {
                 if (arguments.Command == "say")
                 {
-                    string message = $"{player.NametagColor.ToColorCode()}{player.Name}: #ffffff{string.Join(' ', arguments.Arguments)}";
+                    string message = $"{player.Id}: {player.NametagColor.ToColorCode()}{player.Name}: #ffffff{string.Join(' ', arguments.Arguments)}";
                     chatBox.Output(message, Color.White, true, ChatEchoType.Player, player);
                     logger?.LogInformation("{message}", message);
                 }

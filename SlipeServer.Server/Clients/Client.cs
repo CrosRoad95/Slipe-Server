@@ -20,6 +20,7 @@ public class Client<TPlayer>
 {
     private readonly INetWrapper netWrapper;
     private readonly uint binaryAddress;
+    private readonly ushort port;
     private ushort bitStreamVersion;
 
     protected TPlayer Player { get; set; }
@@ -80,9 +81,10 @@ public class Client<TPlayer>
     /// <param name="binaryAddress">The identifier using within the networking interface for the client</param>
     /// <param name="netWrapper">The networking interface the client is connected to</param>
     /// <param name="player">The player this client is associated with</param>
-    public Client(uint binaryAddress, INetWrapper netWrapper, TPlayer player)
+    public Client(uint binaryAddress, ushort port, INetWrapper netWrapper, TPlayer player)
     {
         this.binaryAddress = binaryAddress;
+        this.port = port;
         this.netWrapper = netWrapper;
         this.Player = player;
         this.IsConnected = true;
@@ -97,7 +99,7 @@ public class Client<TPlayer>
         if (!CanSendPacket(packet.PacketId))
             return;
 
-        this.netWrapper.SendPacket(this.binaryAddress, this.bitStreamVersion, packet);
+        this.netWrapper.SendPacket(this.binaryAddress, this.port, this.bitStreamVersion, packet);
         HandleSentPacket(packet.PacketId);
     }
 
@@ -111,7 +113,7 @@ public class Client<TPlayer>
         if (!CanSendPacket(packetId))
             return;
 
-        this.netWrapper.SendPacket(this.binaryAddress, packetId, this.bitStreamVersion, data, priority, reliability);
+        this.netWrapper.SendPacket(this.binaryAddress, this.port, packetId, this.bitStreamVersion, data, priority, reliability);
         HandleSentPacket(packetId);
     }
 
@@ -208,8 +210,8 @@ public class Client<TPlayer>
 /// </summary>
 public class Client : Client<Player>
 {
-    public Client(uint binaryAddress, INetWrapper netWrapper, Player player)
-        : base(binaryAddress, netWrapper, player)
+    public Client(uint binaryAddress, ushort port, INetWrapper netWrapper, Player player)
+        : base(binaryAddress, port, netWrapper, player)
     {
 
     }

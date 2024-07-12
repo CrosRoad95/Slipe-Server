@@ -47,20 +47,22 @@ bool NetWrapper::packetHandler(unsigned char ucPacketID, const NetServerPlayerID
             ping = pNetExtraInfo->m_uiPing;
         }
 
-        registeredCallback(ucPacketID, Socket.GetBinaryAddress(), buffer, byteCount, hasPing, ping);
+        registeredCallback(ucPacketID, Socket.GetBinaryAddress(), Socket.GetPort(), buffer, byteCount, hasPing, ping);
         delete[] buffer;
     }
 
     return true;
 }
 
-void NetWrapper::sendPacket(unsigned long address, unsigned char packetId, unsigned short bitStreamVersion, unsigned char* payload, unsigned long payloadSize, unsigned char priority, unsigned char reliability)
+void NetWrapper::sendPacket(unsigned long address, unsigned short port, unsigned char packetId, unsigned short bitStreamVersion, unsigned char* payload, unsigned long payloadSize, unsigned char priority, unsigned char reliability)
 {
+    printf("SEND PACKET222222 %i %i", address, port);
     NetBitStreamInterface* bitStream = network->AllocateNetServerBitStream(bitStreamVersion);
+    printf("SEND PACKET222222 %i %i asdasd", address, port);
     if (bitStream)
     {
         bitStream->Write(reinterpret_cast<const char*>(payload), payloadSize);
-        NetServerPlayerID& socket = sockets[address];
+        NetServerPlayerID socket(address, port);
         mutex.lock();
         packetQueue.push(QueuedPacket(socket, packetId, bitStream, priority, reliability));
         mutex.unlock();

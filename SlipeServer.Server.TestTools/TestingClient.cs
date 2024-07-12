@@ -9,7 +9,7 @@ public class TestingClient : Client<Player>
     public uint Address { get; private set; }
 
     public TestingClient(uint address, INetWrapper netWrapper, Player player)
-        : base(address, netWrapper, player)
+        : base(address, 0, netWrapper, player)
     {
         this.Address = address;
         this.ConnectionState = Enums.ClientConnectionState.Joined;

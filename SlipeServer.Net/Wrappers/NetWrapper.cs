@@ -17,7 +17,7 @@ public class NetWrapper : IDisposable, INetWrapper
     private const string wrapperDllpath = @"NetModuleWrapper";
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    private delegate void PacketCallback(byte packetId, uint binaryAddress, IntPtr payload, uint payloadSize, bool hasPing, uint ping);
+    private delegate void PacketCallback(byte packetId, uint binaryAddress, ushort port, IntPtr payload, uint payloadSize, bool hasPing, uint ping);
 
 
 #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
@@ -34,7 +34,7 @@ public class NetWrapper : IDisposable, INetWrapper
     private static extern void StopNetWrapper(ushort id);
 
     [DllImport(wrapperDllpath, EntryPoint = "sendPacket")]
-    private static extern void SendPacket(ushort id, uint binaryAddress, byte packetId, ushort bitStreamVersion, IntPtr payload, uint payloadSize, byte priority, byte ordering);
+    private static extern void SendPacket(ushort id, uint binaryAddress, ushort port, byte packetId, ushort bitStreamVersion, IntPtr payload, uint payloadSize, byte priority, byte ordering);
 
     [DllImport(wrapperDllpath, EntryPoint = "setSocketVersion")]
     private static extern void SetSocketVersion(ushort id, uint binaryAddress, ushort version);
@@ -87,14 +87,14 @@ public class NetWrapper : IDisposable, INetWrapper
 
     public void Stop() => StopNetWrapper(this.id);
 
-    protected virtual void SendPacket(uint binaryAddress, byte packetId, ushort bitStreamVersion, byte[] payload, PacketPriority priority, PacketReliability reliability)
+    protected virtual void SendPacket(uint binaryAddress, ushort port, byte packetId, ushort bitStreamVersion, byte[] payload, PacketPriority priority, PacketReliability reliability)
     {
         int size = Marshal.SizeOf((byte)0) * payload.Length;
         IntPtr pointer = Marshal.AllocHGlobal(size);
         try
         {
             Marshal.Copy(payload, 0, pointer, payload.Length);
-            SendPacket(this.id, binaryAddress, packetId, bitStreamVersion, pointer, (uint)payload.Length, (byte)priority, (byte)reliability);
+            SendPacket(this.id, binaryAddress, port, packetId, bitStreamVersion, pointer, (uint)payload.Length, (byte)priority, (byte)reliability);
         }
         finally
         {
@@ -102,14 +102,14 @@ public class NetWrapper : IDisposable, INetWrapper
         }
     }
 
-    public void SendPacket(uint binaryAddress, ushort bitStreamVersion, Packet packet)
+    public void SendPacket(uint binaryAddress, ushort port, ushort bitStreamVersion, Packet packet)
     {
-        SendPacket(binaryAddress, (byte)packet.PacketId, bitStreamVersion, packet.Write(), packet.Priority, packet.Reliability);
+        SendPacket(binaryAddress, port, (byte)packet.PacketId, bitStreamVersion, packet.Write(), packet.Priority, packet.Reliability);
     }
 
-    public void SendPacket(uint binaryAddress, PacketId packetId, ushort bitStreamVersion, byte[] data, PacketPriority priority = PacketPriority.High, PacketReliability reliability = PacketReliability.ReliableSequenced)
+    public void SendPacket(uint binaryAddress, ushort port, PacketId packetId, ushort bitStreamVersion, byte[] data, PacketPriority priority = PacketPriority.High, PacketReliability reliability = PacketReliability.ReliableSequenced)
     {
-        SendPacket(binaryAddress, (byte)packetId, bitStreamVersion, data, priority, reliability);
+        SendPacket(binaryAddress, port, (byte)packetId, bitStreamVersion, data, priority, reliability);
     }
 
     public Tuple<string, string, string> GetClientSerialExtraAndVersion(uint binaryAddress)
@@ -166,16 +166,16 @@ public class NetWrapper : IDisposable, INetWrapper
             allowGta3ImgMods.ToString().ToLower());
     }
 
-    protected virtual void PacketInterceptor(byte packetId, uint binaryAddress, IntPtr payload, uint payloadSize, bool hasPing, uint ping)
+    protected virtual void PacketInterceptor(byte packetId, uint binaryAddress, ushort port, IntPtr payload, uint payloadSize, bool hasPing, uint ping)
     {
         byte[] data = new byte[payloadSize];
         Marshal.Copy(payload, data, 0, (int)payloadSize);
 
         PacketId parsedPacketId = (PacketId)packetId;
 
-        this.PacketReceived?.Invoke(this, binaryAddress, parsedPacketId, data, hasPing ? ping : (uint?)null);
+        this.PacketReceived?.Invoke(this, binaryAddress, port, parsedPacketId, data, hasPing ? ping : (uint?)null);
     }
 
-    public event Action<INetWrapper, uint, PacketId, byte[], uint?>? PacketReceived;
+    public event Action<INetWrapper, uint, ushort, PacketId, byte[], uint?>? PacketReceived;
 
 }

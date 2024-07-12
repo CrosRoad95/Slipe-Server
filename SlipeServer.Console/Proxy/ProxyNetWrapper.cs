@@ -22,19 +22,19 @@ public class ProxyNetWrapper : INetWrapper
 
     public void Stop() { }
 
-    protected virtual void SendPacket(uint binaryAddress, byte packetId, ushort bitStreamVersion, byte[] payload, PacketPriority priority, PacketReliability reliability)
+    protected virtual void SendPacket(uint binaryAddress, ushort port, byte packetId, ushort bitStreamVersion, byte[] payload, PacketPriority priority, PacketReliability reliability)
     {
         this.proxyService.SendMessage(RemoteMessageType.packet, packetId, binaryAddress, payload);
     }
 
-    public void SendPacket(uint binaryAddress, ushort bitStreamVersion, Packet packet)
+    public void SendPacket(uint binaryAddress, ushort port, ushort bitStreamVersion, Packet packet)
     {
-        SendPacket(binaryAddress, (byte)packet.PacketId, bitStreamVersion, packet.Write(), packet.Priority, packet.Reliability);
+        SendPacket(binaryAddress, port, (byte)packet.PacketId, bitStreamVersion, packet.Write(), packet.Priority, packet.Reliability);
     }
 
-    public void SendPacket(uint binaryAddress, PacketId packetId, ushort bitStreamVersion, byte[] data, PacketPriority priority = PacketPriority.High, PacketReliability reliability = PacketReliability.ReliableSequenced)
+    public void SendPacket(uint binaryAddress, ushort port, PacketId packetId, ushort bitStreamVersion, byte[] data, PacketPriority priority = PacketPriority.High, PacketReliability reliability = PacketReliability.ReliableSequenced)
     {
-        SendPacket(binaryAddress, (byte)packetId, bitStreamVersion, data, priority, reliability);
+        SendPacket(binaryAddress, port, (byte)packetId, bitStreamVersion, data, priority, reliability);
     }
 
     public Tuple<string, string, string> GetClientSerialExtraAndVersion(uint binaryAddress)
@@ -65,8 +65,8 @@ public class ProxyNetWrapper : INetWrapper
 
     public void TriggerPacketReceival(uint id, PacketId packet, byte[] payload)
     {
-        this.PacketReceived?.Invoke(this, id, packet, payload, null);
+        this.PacketReceived?.Invoke(this, id, 0, packet, payload, null);
     }
 
-    public event Action<INetWrapper, uint, PacketId, byte[], uint?>? PacketReceived;
+    public event Action<INetWrapper, uint, ushort, PacketId, byte[], uint?>? PacketReceived;
 }

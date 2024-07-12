@@ -73,7 +73,7 @@ public class TestingServer<TPlayer> : MtaServer<TPlayer>
 
     private void SetupSendPacketMocks()
     {
-        this.NetWrapperMock.Setup(x => x.SendPacket(It.IsAny<uint>(), It.IsAny<ushort>(), It.IsAny<Packet>()))
+        this.NetWrapperMock.Setup(x => x.SendPacket(It.IsAny<uint>(), It.IsAny<ushort>(), It.IsAny<ushort>(), It.IsAny<Packet>()))
             .Callback((uint address, ushort version, Packet packet) =>
             {
                 this.sendPacketCalls.Add(new SendPacketCall()
@@ -89,6 +89,7 @@ public class TestingServer<TPlayer> : MtaServer<TPlayer>
 
         this.NetWrapperMock.Setup(x => x.SendPacket(
             It.IsAny<uint>(),
+            It.IsAny<ushort>(), 
             It.IsAny<PacketId>(), 
             It.IsAny<ushort>(), 
             It.IsAny<byte[]>(), 
@@ -119,7 +120,7 @@ public class TestingServer<TPlayer> : MtaServer<TPlayer>
     public TPlayer AddFakePlayer()
     {
         var address = ++this.binaryAddressCounter;
-        var client = CreateClient(address, this.NetWrapperMock.Object);
+        var client = CreateClient(address, 0, this.NetWrapperMock.Object);
         var player = client.Player as TPlayer;
 
         this.clients[this.NetWrapperMock.Object].Add(address, client);
@@ -131,7 +132,7 @@ public class TestingServer<TPlayer> : MtaServer<TPlayer>
         return player;
     }
 
-    protected override IClient CreateClient(uint binaryAddress, INetWrapper netWrapper)
+    protected override IClient CreateClient(uint binaryAddress, ushort port, INetWrapper netWrapper)
     {
         Player player;
         if (typeof(TPlayer) == typeof(Player) || typeof(TPlayer) == typeof(TestingPlayer))
