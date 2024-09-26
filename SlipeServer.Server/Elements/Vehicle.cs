@@ -425,7 +425,9 @@ public class Vehicle : Element
                 this.JackingPed = null;
             }
 
-            if(value == null)
+            _jackingPed = value;
+
+            if (value == null)
             {
                 if(_jackingPed != null)
                     _jackingPed.Destroyed -= handleDestroyed;
