@@ -167,6 +167,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
                     player.JackingVehicle = vehicle;
                     player.VehicleAction = VehicleAction.Jacked;
                     vehicle.JackingPed = client.Player;
+                    Console.WriteLine("Subscribe jacked player");
                     player.Disconnected += HandleDisconnected;
 
                     var replyPacket = new VehicleInOutPacket()
@@ -223,12 +224,13 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
 
     private void HandleDisconnected(Elements.Player sender, Elements.Events.PlayerQuitEventArgs e)
     {
-        Console.WriteLine("sender.JackingVehicle {0} = {1}", sender.JackingVehicle, sender.JackingVehicle.JackingPed?.Name);
-        if(sender.JackingVehicle!.JackingPed != null)
+        Console.WriteLine("HandleDisconnected jacked player");
+        if (sender.JackingVehicle?.JackingPed != null)
         {
             sender.JackingVehicle.JackingPed.VehicleAction = VehicleAction.None;
         }
         sender.JackingVehicle = null;
+        sender.Disconnected -= HandleDisconnected;
     }
 
     private void SendInRequestFailResponse(IClient client, Elements.Vehicle vehicle, VehicleEnterFailReason failReason)
@@ -405,6 +407,8 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
         {
             jackedPlayer.Vehicle = null;
             jackedPlayer.VehicleAction = VehicleAction.None;
+            jackedPlayer.Disconnected -= HandleDisconnected;
+            Console.WriteLine("unsubscribe jacked player 1");
 
             vehicle.JackingPed = null;
 
@@ -447,18 +451,24 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
         };
         this.server.BroadcastPacket(replyPacket);
 
-        var jackedPlayer = vehicle.Driver;
-        if (jackedPlayer == null)
+        var jackedPed = vehicle.Driver;
+        if (jackedPed == null)
             return;
+
+        if(jackedPed is Elements.Player jackedPlayer)
+        {
+            Console.WriteLine("unsubscribe jacked player 2");
+            jackedPlayer.Disconnected -= HandleDisconnected;
+        }
 
         if (packet.StartedJacking)
         {
-            jackedPlayer.Vehicle = null;
-            vehicle.RemovePassenger(jackedPlayer, false);
+            jackedPed.Vehicle = null;
+            vehicle.RemovePassenger(jackedPed, false);
 
             var jackReplyPacket = new VehicleInOutPacket()
             {
-                PedId = jackedPlayer.Id,
+                PedId = jackedPed.Id,
                 VehicleId = vehicle.Id,
                 OutActionId = VehicleInOutActionReturns.NotifyOutReturn,
                 Seat = packet.Seat

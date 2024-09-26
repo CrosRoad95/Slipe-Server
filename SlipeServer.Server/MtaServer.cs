@@ -100,6 +100,7 @@ public class MtaServer
     public RootElement RootElement => this.root;
     public Configuration Configuration => this.configuration;
 
+    private readonly ILogger logger;
     public MtaServer(
         Action<ServerBuilder> builderAction,
         Func<ulong, INetWrapper, IClient>? clientCreationMethod = null
@@ -126,7 +127,8 @@ public class MtaServer
 
         this.elementCollection = this.serviceProvider.GetRequiredService<IElementCollection>();
         this.elementIdGenerator = this.serviceProvider.GetService<IElementIdGenerator>();
-        this.packetReducer = new(this.serviceProvider.GetRequiredService<ILogger>());
+        this.logger = this.serviceProvider.GetRequiredService<ILogger>();
+        this.packetReducer = new(this.logger);
 
         this.root.AssociateWith(this);
 
@@ -156,7 +158,8 @@ public class MtaServer
 
         this.elementCollection = this.serviceProvider.GetRequiredService<IElementCollection>();
         this.elementIdGenerator = this.serviceProvider.GetService<IElementIdGenerator>();
-        this.packetReducer = new(this.serviceProvider.GetRequiredService<ILogger>());
+        this.logger = this.serviceProvider.GetRequiredService<ILogger>();
+        this.packetReducer = new(this.logger);
 
         this.root.AssociateWith(this);
 
@@ -584,7 +587,16 @@ public class MtaServer
                     PacketId.PACKET_ID_PLAYER_NO_SOCKET => QuitReason.Timeout,
                     _ => throw new NotImplementedException()
                 };
-                client.Player.TriggerDisconnected(quitReason);
+
+                try
+                {
+                    client.Player.TriggerDisconnected(quitReason);
+                }
+                catch(Exception ex)
+                {
+                    this.logger.LogError(ex, "Failed to TriggerDisconnected");
+                }
+
                 client.SetDisconnected();
                 this.clients[netWrapper].Remove(binaryAddress);
             }

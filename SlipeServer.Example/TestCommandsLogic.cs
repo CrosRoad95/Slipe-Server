@@ -26,6 +26,15 @@ public class TestCommandsLogic
     private void AddGeneralCommands()
     {
         AddCommand("hello", () => this.chatBox.Output("Hello"));
+        AddCommand("quitexception", (sender, args) =>
+        {
+            args.Player.Disconnected += (sender, args) =>
+            {
+                throw new Exception("oops");
+            };
+
+            this.chatBox.OutputTo(args.Player, "Now disconnect");
+        });
     }
     
     private void AddVehiclesCommands()
