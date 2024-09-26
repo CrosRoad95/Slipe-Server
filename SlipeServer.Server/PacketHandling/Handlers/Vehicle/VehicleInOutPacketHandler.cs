@@ -10,6 +10,7 @@ using System.Numerics;
 using SlipeServer.Server.Clients;
 using System;
 using System.Reflection;
+using SlipeServer.Packets;
 
 namespace SlipeServer.Server.PacketHandling.Handlers.Vehicle;
 
@@ -168,7 +169,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
                     player.VehicleAction = VehicleAction.Jacked;
                     vehicle.JackingPed = client.Player;
                     Console.WriteLine("Subscribe jacked player");
-                    player.Disconnected += HandleDisconnected;
+                    player.Destroyed += HandleDestroyed;
 
                     var replyPacket = new VehicleInOutPacket()
                     {
@@ -222,22 +223,42 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
         }
     }
 
-    private void HandleDisconnected(Elements.Player sender, Elements.Events.PlayerQuitEventArgs e)
+    private void HandleDestroyed(Elements.Element sender)
     {
+        if (sender is not Elements.Player player)
+            return;
+
         Console.WriteLine("HandleDisconnected jacked player");
-        var vehicle = sender.JackingVehicle;
-        var ped = sender.JackingVehicle?.JackingPed;
+        var vehicle = player.JackingVehicle;
+        var ped = player.JackingVehicle?.JackingPed;
         if (ped != null)
         {
             ped.VehicleAction = VehicleAction.None;
             ped.Vehicle = vehicle;
-            if(ped.Vehicle != null)
-                ped.Vehicle.JackingPed = null;
             ped.EnteringVehicle = null;
+            if(ped.Vehicle != null)
+            {
+                ped.Vehicle.JackingPed = null;
+                ped.Vehicle.Jack(null, player);
+            }
+
+            var replyPacket = new VehicleInOutPacket()
+            {
+                PedId = player.Id,
+                PlayerInId = player.Id,
+                PlayerOutId = vehicle.Driver?.Id ?? new Packets.Structs.ElementId
+                {
+                    Value = 0
+                },
+                VehicleId = vehicle.Id,
+                OutActionId = VehicleInOutActionReturns.NotifyJackReturn,
+                Seat = 0
+            };
+            this.server.BroadcastPacket(replyPacket);
         }
 
-        sender.JackingVehicle = null;
-        sender.Disconnected -= HandleDisconnected;
+        player.JackingVehicle = null;
+        player.Destroyed -= HandleDestroyed;
     }
 
     private void SendInRequestFailResponse(IClient client, Elements.Vehicle vehicle, VehicleEnterFailReason failReason)
@@ -300,6 +321,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
 
     private void HandleRequestOut(IClient client, Elements.Vehicle vehicle, VehicleInOutPacket packet)
     {
+        Console.WriteLine("HandleRequestOut {0}", client.Player.Name);
         if (client.Player.VehicleAction != VehicleAction.None)
         {
             var errorReplyPacket = new VehicleInOutPacket()
@@ -338,6 +360,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
 
     private void HandleNotifyOut(IClient client, Elements.Vehicle vehicle, VehicleInOutPacket packet)
     {
+        Console.WriteLine("HandleNotifyOut {0}", client.Player.Name);
         if (client.Player.VehicleAction != VehicleAction.Exiting)
             return;
 
@@ -362,6 +385,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
 
     private void HandleNotifyOutAbort(IClient client, Elements.Vehicle vehicle, VehicleInOutPacket packet)
     {
+        Console.WriteLine("HandleNotifyOutAbort {0}", client.Player.Name);
         if (client.Player.VehicleAction != VehicleAction.Exiting)
             return;
 
@@ -414,7 +438,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
         {
             jackedPlayer.Vehicle = null;
             jackedPlayer.VehicleAction = VehicleAction.None;
-            jackedPlayer.Disconnected -= HandleDisconnected;
+            jackedPlayer.Destroyed -= HandleDestroyed;
             Console.WriteLine("unsubscribe jacked player 1");
 
             vehicle.JackingPed = null;
@@ -465,7 +489,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
         if(jackedPed is Elements.Player jackedPlayer)
         {
             Console.WriteLine("unsubscribe jacked player 2");
-            jackedPlayer.Disconnected -= HandleDisconnected;
+            jackedPlayer.Destroyed -= HandleDestroyed;
         }
 
         if (packet.StartedJacking)
