@@ -225,11 +225,14 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
     private void HandleDisconnected(Elements.Player sender, Elements.Events.PlayerQuitEventArgs e)
     {
         Console.WriteLine("HandleDisconnected jacked player");
+        var vehicle = sender.JackingVehicle;
         var ped = sender.JackingVehicle?.JackingPed;
         if (ped != null)
         {
             ped.VehicleAction = VehicleAction.None;
-            ped.Vehicle = sender.JackingVehicle;
+            ped.Vehicle = vehicle;
+            if(ped.Vehicle != null)
+                ped.Vehicle.JackingPed = null;
             ped.EnteringVehicle = null;
         }
 
