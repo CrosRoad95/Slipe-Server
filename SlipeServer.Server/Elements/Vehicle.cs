@@ -412,7 +412,35 @@ public class Vehicle : Element
 
     public bool IsTrailer => VehicleConstants.TrailerModels.Contains((VehicleModel)this.Model);
 
-    public Ped? JackingPed { get; set; }
+    private Ped? _jackingPed;
+    public Ped? JackingPed
+    {
+        get => _jackingPed; set
+        {
+            if (value == _jackingPed)
+                return;
+
+            void handleDestroyed(Element e)
+            {
+                this.JackingPed = null;
+            }
+
+            if(value == null)
+            {
+                if(_jackingPed != null)
+                    _jackingPed.Destroyed -= handleDestroyed;
+
+                if(this._jackingPed is Player player)
+                {
+                    player.VehicleAction = VehicleAction.None;
+                }
+            } else
+            {
+                value.Destroyed += handleDestroyed;
+            }
+        }
+    }
+
     public Ped? Driver
     {
         get
