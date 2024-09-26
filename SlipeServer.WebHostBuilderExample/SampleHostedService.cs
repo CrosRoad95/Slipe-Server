@@ -1,4 +1,4 @@
-﻿using SlipeServer.Console.Logic;
+﻿using SlipeServer.Example.Lua;
 using SlipeServer.Packets.Lua.Camera;
 using SlipeServer.Server;
 using SlipeServer.Server.Elements;
@@ -19,12 +19,6 @@ public class SampleHostedService : IHostedService
         this.chatBox = chatBox;
         this.resourceProvider = resourceProvider;
         commandService.AddCommand("startSample").Triggered += HandleStartSample;
-        commandService.AddCommand("spawnVehicle").Triggered += HandleSpawnVehicleTriggered;
-    }
-
-    private void HandleSpawnVehicleTriggered(object? sender, SlipeServer.Server.Events.CommandTriggeredEventArgs e)
-    {
-        new Vehicle(404, e.Player.Position).AssociateWith(this.mtaServer);
     }
 
     private void HandleStartSample(object? sender, SlipeServer.Server.Events.CommandTriggeredEventArgs e)

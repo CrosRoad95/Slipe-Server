@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using MoonSharp.Interpreter;
-using SlipeServer.Console.LuaDefinitions;
 using SlipeServer.Lua;
 using SlipeServer.Scripting;
 using SlipeServer.Server.Services;
-using System.IO;
 
-namespace SlipeServer.Console.Logic;
+namespace SlipeServer.Example.Lua;
 
 public class LuaTestLogic
 {
@@ -15,7 +13,7 @@ public class LuaTestLogic
     private readonly ILogger logger;
 
     public LuaTestLogic(
-        IScriptEventRuntime eventRuntime, 
+        IScriptEventRuntime eventRuntime,
         LuaService luaService,
         CommandService commandService,
         ILogger logger
@@ -36,8 +34,8 @@ public class LuaTestLogic
         this.luaService.LoadDefinitions<CustomMathDefinition>();
         this.luaService.LoadDefinitions<TestDefinition>();
 
-        using FileStream testLua = File.OpenRead("test.lua");
-        using StreamReader reader = new StreamReader(testLua);
+        using var testLua = File.OpenRead("test.lua");
+        using var reader = new StreamReader(testLua);
         try
         {
             this.luaService.LoadScript("test.lua", reader.ReadToEnd());

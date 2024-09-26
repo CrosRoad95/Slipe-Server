@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using SlipeServer.Example;
 using SlipeServer.Server.Resources.Serving;
 
 
@@ -22,6 +23,7 @@ builder
     {
         builder.UseConfiguration(configuration!);
         builder.AddHostedDefaults(exceptBehaviours: ServerBuilderDefaultBehaviours.MasterServerAnnouncementBehaviour);
+        builder.AddLogic<TestCommandsLogic>();
     });
 
 var app = builder.Build();

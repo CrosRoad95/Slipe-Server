@@ -1484,6 +1484,12 @@ public class ServerTestLogic
             }, 2);
             this.chatBox.Output("sent");
         };
+
+        this.commandService.AddCommand("playerscount").Triggered += (source, args) =>
+        {
+            var players = this.elementCollection.GetByType<Player>().Count();
+            this.chatBox.Output($"Players count: {players}");
+        };
     }
 
     private void OnPlayerJoin(CustomPlayer player)

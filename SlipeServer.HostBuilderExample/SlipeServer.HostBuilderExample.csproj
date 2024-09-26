@@ -34,7 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SlipeServer.ConfigurationProviders\SlipeServer.ConfigurationProviders.csproj" />
     <ProjectReference Include="..\SlipeServer.Hosting\SlipeServer.Hosting.csproj" />
-    <ProjectReference Include="..\SlipeServer.Server\SlipeServer.Server.csproj" />
+	<ProjectReference Include="..\SlipeServer.Example\SlipeServer.Example.csproj" />
   </ItemGroup>
 
   <ItemGroup>

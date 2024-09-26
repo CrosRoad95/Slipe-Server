@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SlipeServer.Scripting;
 
-namespace SlipeServer.Console.LuaDefinitions;
+namespace SlipeServer.Example.Lua;
 
 public class TestDefinition
 {

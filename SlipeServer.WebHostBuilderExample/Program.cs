@@ -3,10 +3,9 @@ using SlipeServer.Hosting;
 using SlipeServer.Server.Resources.Serving;
 using SlipeServer.Server;
 using SlipeServer.Server.ServerBuilders;
-using SlipeServer.Server.Mappers;
-using SlipeServer.Console.Logic;
 using SlipeServer.Lua;
 using SlipeServer.WebHostBuilderExample;
+using SlipeServer.Example;
 
 Directory.SetCurrentDirectory(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()!.Location)!);
 
@@ -35,6 +34,7 @@ builder.AddMtaServer(serverBuilder =>
 
     serverBuilder.AddHostedDefaults(exceptBehaviours: exceptBehaviours);
     serverBuilder.AddSampleResource();
+    serverBuilder.AddLogic<TestCommandsLogic>();
 });
 
 var app = builder.Build();

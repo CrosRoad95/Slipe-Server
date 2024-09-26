@@ -8,6 +8,8 @@ using SlipeServer.Console.Logic;
 using SlipeServer.Console.PacketReplayer;
 using SlipeServer.Console.Proxy;
 using SlipeServer.Console.Services;
+using SlipeServer.Example;
+using SlipeServer.Example.Lua;
 using SlipeServer.Lua;
 using SlipeServer.LuaControllers;
 using SlipeServer.Packets.Definitions.Sync;
@@ -109,6 +111,7 @@ public partial class Program
                 builder.AddParachuteResource();
                 builder.AddLuaControllers();
 
+                builder.AddLogic<TestCommandsLogic>();
                 builder.AddLogic<ServerTestLogic>();
                 builder.AddLogic<LuaTestLogic>();
                 builder.AddLogic<PhysicsTestLogic>();
