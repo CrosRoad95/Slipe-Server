@@ -306,30 +306,6 @@ public class Ped : Element
             if (this.jackingVehicle == value)
                 return;
 
-            Console.WriteLine("jacking changed");
-            void handleJackingPedDestroyed(Element element)
-            {
-                Console.WriteLine("handleJackingPedDestroyed {0}", element);
-                if (element is Player player)
-                {
-                    Console.WriteLine("Reset jacking for: {0}", player.Name);
-                    player.VehicleAction = VehicleAction.None;
-                }
-            }
-
-            if (this.jackingVehicle != null)
-            {
-                Console.WriteLine(" this.jackingVehicle.Destroyed += handleJackingPedDestroyed");
-                this.jackingVehicle.Destroyed += handleJackingPedDestroyed;
-            } else
-            {
-                if (this.jackingVehicle != null)
-                {
-                    Console.WriteLine(" this.jackingVehicle.Destroyed -= handleJackingPedDestroyed UNSUBSCRIBE");
-                    this.jackingVehicle.Destroyed -= handleJackingPedDestroyed;
-                }
-            }
-
             var args = new ElementChangedEventArgs<Ped, Vehicle?>(this, this.jackingVehicle, value, this.IsSync);
             this.jackingVehicle = value;
             JackingVehicleChanged?.Invoke(this, args);

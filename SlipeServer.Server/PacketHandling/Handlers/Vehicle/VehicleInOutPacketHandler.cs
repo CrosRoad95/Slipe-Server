@@ -8,6 +8,7 @@ using SlipeServer.Server.Extensions;
 using SlipeServer.Server.ElementCollections;
 using System.Numerics;
 using SlipeServer.Server.Clients;
+using System;
 
 namespace SlipeServer.Server.PacketHandling.Handlers.Vehicle;
 
@@ -163,6 +164,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
                 {
                     client.Player.VehicleAction = VehicleAction.Jacking;
                     client.Player.JackingVehicle = vehicle;
+                    player.Disconnected += HandleDisconnected;
                     player.VehicleAction = VehicleAction.Jacked;
                     vehicle.JackingPed = client.Player;
 
@@ -216,6 +218,11 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
                 this.server.BroadcastPacket(replyPacket);
             }
         }
+    }
+
+    private void HandleDisconnected(Elements.Player sender, Elements.Events.PlayerQuitEventArgs e)
+    {
+        Console.WriteLine("sender.JackingVehicle {0}", sender.JackingVehicle)
     }
 
     private void SendInRequestFailResponse(IClient client, Elements.Vehicle vehicle, VehicleEnterFailReason failReason)
