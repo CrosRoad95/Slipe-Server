@@ -44,6 +44,8 @@ public class TestCommandsLogic
                 this.chatBox.Output($"- Vehicle: {(player.Vehicle != null ? player.Vehicle.Model : "<none>")}");
                 this.chatBox.Output($"- Vehicle action: {player.VehicleAction}");
                 this.chatBox.Output($"- Vehicle seat: {player.Seat}");
+                this.chatBox.Output($"- Vehicle jackingVehicle: {(player.JackingVehicle != null ? player.JackingVehicle.Model : "<none>")}");
+                this.chatBox.Output($"- Vehicle vehicle jacking ped: {(player.Vehicle?.JackingPed != null ? player.Vehicle?.JackingPed.Name : "<none>")}");
             }
         });
     }
