@@ -222,7 +222,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
 
     private void HandleDisconnected(Elements.Player sender, Elements.Events.PlayerQuitEventArgs e)
     {
-        Console.WriteLine("sender.JackingVehicle {0}", sender.JackingVehicle)
+        Console.WriteLine("sender.JackingVehicle {0}", sender.JackingVehicle);
     }
 
     private void SendInRequestFailResponse(IClient client, Elements.Vehicle vehicle, VehicleEnterFailReason failReason)
