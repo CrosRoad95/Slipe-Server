@@ -9,6 +9,7 @@ using SlipeServer.Server.ElementCollections;
 using System.Numerics;
 using SlipeServer.Server.Clients;
 using System;
+using System.Reflection;
 
 namespace SlipeServer.Server.PacketHandling.Handlers.Vehicle;
 
@@ -163,10 +164,10 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
                 if (vehicle.Driver is Elements.Player player)
                 {
                     client.Player.VehicleAction = VehicleAction.Jacking;
-                    client.Player.JackingVehicle = vehicle;
-                    player.Disconnected += HandleDisconnected;
+                    player.JackingVehicle = vehicle;
                     player.VehicleAction = VehicleAction.Jacked;
                     vehicle.JackingPed = client.Player;
+                    player.Disconnected += HandleDisconnected;
 
                     var replyPacket = new VehicleInOutPacket()
                     {
@@ -222,7 +223,8 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
 
     private void HandleDisconnected(Elements.Player sender, Elements.Events.PlayerQuitEventArgs e)
     {
-        Console.WriteLine("sender.JackingVehicle {0}", sender.JackingVehicle);
+        Console.WriteLine("sender.JackingVehicle {0} = {1}", sender.JackingVehicle, sender.JackingVehicle?.Driver?.Name);
+        sender.JackingVehicle = null;
     }
 
     private void SendInRequestFailResponse(IClient client, Elements.Vehicle vehicle, VehicleEnterFailReason failReason)
@@ -399,10 +401,12 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
         {
             jackedPlayer.Vehicle = null;
             jackedPlayer.VehicleAction = VehicleAction.None;
+
             vehicle.JackingPed = null;
 
             client.Player.Vehicle = vehicle;
             client.Player.EnteringVehicle = null;
+            client.Player.JackingVehicle = null;
             client.Player.VehicleAction = VehicleAction.None;
             vehicle.AddPassenger(0, client.Player, false);
 
@@ -427,6 +431,7 @@ public class VehicleInOutPacketHandler : IPacketHandler<VehicleInOutPacket>
             return;
 
         client.Player.VehicleAction = VehicleAction.None;
+        client.Player.JackingVehicle = null;
         vehicle.JackingPed = null;
 
         var replyPacket = new VehicleInOutPacket()
