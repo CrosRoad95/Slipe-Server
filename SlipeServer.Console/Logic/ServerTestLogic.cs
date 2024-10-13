@@ -1484,6 +1484,14 @@ public class ServerTestLogic
             }, 2);
             this.chatBox.Output("sent");
         };
+
+
+        this.commandService.AddCommand("syncer").Triggered += (source, args) =>
+        {
+            var position = args.Player.Position;
+            var vehicle = new Vehicle(404, position + new Vector3(2, 0,0)).AssociateWith(this.server);
+            var ped = new Ped(0, position - new Vector3(2, 0, 0)).AssociateWith(this.server);
+        };
     }
 
     private void OnPlayerJoin(CustomPlayer player)
